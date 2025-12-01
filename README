@@ -1,0 +1,231 @@
+'''This project contains:
+
+Backend (Django):
+
+Django REST Framework for APIs
+
+CORS enabled
+
+WhiteNoise static serving
+
+UserData CRUD API
+
+Frontend (React):
+
+Fetches user data from Django API
+
+Built and served through Django in production
+
+Both projects live inside the same root directory for easy management.
+
+📁 Project Structure
+myproject/
+│
+├── backend/
+│   ├── api/                     ← Django app (Models, Views, Serializers)
+│   ├── backend/                 ← Project settings + URLs
+│   │   ├── templates/           ← React index.html
+│   │   ├── static/              ← React static JS/CSS files
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── db.sqlite3
+│   └── manage.py
+│
+└── frontend/                    ← React application
+    ├── build/                   ← Production build output
+    ├── src/
+    ├── public/
+    └── package.json
+
+🔧 Backend Setup (Django)
+1. Install requirements
+pip install djangorestframework django-cors-headers whitenoise
+
+2. Add apps in backend/settings.py
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'api',
+    'rest_framework',
+    'corsheaders',
+]
+
+3. Middleware setup
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+
+
+Enable CORS:
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+4. Django Template & Static Configuration
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'backend/templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'backend/static'),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+🗄 Database Model
+
+api/models.py
+
+class UserData(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=15)
+    age = models.IntegerField()
+
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    ]
+
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
+
+
+Run migrations:
+
+python manage.py makemigrations
+python manage.py migrate
+
+🔄 API Layer
+Serializer (api/serializers.py)
+class UserDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserData
+        fields = '__all__'
+
+ViewSet (api/views.py)
+class UserDataViewSet(viewsets.ModelViewSet):
+    queryset = UserData.objects.all()
+    serializer_class = UserDataSerializer
+
+API URL Routing (api/urls.py)
+router = DefaultRouter()
+router.register(r'users', UserDataViewSet)
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
+
+Main URLs (backend/backend/urls.py)
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('api.urls')),
+]
+
+🎨 Frontend Setup (React)
+
+Inside frontend/:
+
+Start dev server:
+
+npm start
+
+📡 Connecting React to Django API
+useEffect(() => {
+  fetchUsersData();
+}, []);
+
+const fetchUsersData = async () => {
+  const data = await fetch('http://localhost:8000/api/users/');
+  const res = await data.json();
+  setUsersData(res);
+};
+
+🏗 Building React for Production
+cd frontend
+npm run build
+
+Copy build files to Django:
+
+✔ Copy build/index.html → backend/backend/templates/index.html
+✔ Copy build/static → backend/backend/static/
+
+This allows Django to serve React.
+
+🔥 Serve React from Django
+
+Create backend/backend/views.py:
+
+class ReactAppView(TemplateView):
+    template_name = "index.html"
+
+
+Add catch-all route in backend/backend/urls.py:
+
+urlpatterns += [
+    re_path(r'^.*$', ReactAppView.as_view(), name='react'),
+]
+
+
+Now Django serves:
+
+/api/... → backend API
+
+all other routes → React app
+
+🧪 Run the Full Application
+cd backend
+python manage.py runserver
+
+
+Visit:
+
+http://localhost:8000/
+
+
+You will see the React frontend served by Django.
+
+🔄 Updating Frontend After Changes
+
+Whenever React UI changes:
+
+npm run build
+copy build → Django static + template folders
+
+
+Django automatically serves the new React version.
+
+🎉 Project Completed Successfully
+
+You now have:
+
+✔ Django backend (API)
+✔ React frontend
+✔ Both inside one project
+✔ One-server deployment model
+✔ No CORS issues
+✔ Production optimized setup'''
