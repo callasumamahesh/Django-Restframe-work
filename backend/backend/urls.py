@@ -17,13 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import include
+from django.urls import re_path 
+from .views import ReactAppView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
 ]
-
-from django.urls import re_path
-from .views import ReactAppView
 
 urlpatterns += [
     re_path(r'^.*$', ReactAppView.as_view(), name='react'),
